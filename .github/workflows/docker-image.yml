@@ -33,11 +33,14 @@ jobs:
           source: "."
           target: "~/urltofile/"
 
-      - name: Build and deploy with docker-compose on server
+      - name: Build and deploy Docker container on server
         run: |
-          ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST << 'EOF'
+          ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST << EOF
             cd ~/urltofile
-            sudo docker compose down --remove-orphans
-            sudo docker compose build
-            sudo docker compose up -d
+            docker build -t urltofile .
+            if docker ps -a --format '{{.Names}}' | grep -Eq '^urltofile-container$'; then
+              docker stop urltofile-container
+              docker rm urltofile-container
+            fi
+            docker run -d --name urltofile-container -p 8080:8000 urltofile
           EOF
