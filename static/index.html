@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Platform Audio Downloader</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .downloader-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .features-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            color: #4a5568;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+        }
+
+        .youtube-icon {
+            color: #ff0000;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            font-size: 1.1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 15px 15px 50px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        input::placeholder {
+            color: #a0aec0;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .progress-section {
+            margin-top: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+        }
+
+        .progress-section.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .progress-container {
+            background: #e2e8f0;
+            border-radius: 25px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 25px;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shine 1.5s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-percent {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .status {
+            color: #4a5568;
+            font-weight: 500;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(102, 126, 234, 0.1);
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status.error {
+            background: rgba(245, 101, 101, 0.1);
+            color: #e53e3e;
+        }
+
+        .links-section {
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+        }
+
+        .links-section.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .download-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .download-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .download-link i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        .thumbnail-link {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+        }
+
+        .thumbnail-link:hover {
+            box-shadow: 0 8px 20px rgba(237, 137, 54, 0.3);
+        }
+
+        .platform-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .platform-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .platform-card.active {
+            border: 2px solid #48bb78;
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+        }
+
+        .platform-card.coming-soon {
+            border: 2px solid #ed8936;
+            background: linear-gradient(135deg, #fffaf0 0%, #fed7aa 100%);
+            position: relative;
+        }
+
+        .platform-card.planned {
+            border: 2px solid #a0aec0;
+            background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
+            opacity: 0.7;
+        }
+
+        .platform-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .platform-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            width: 50px;
+            text-align: center;
+        }
+
+        .platform-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .platform-status {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .platform-status.active {
+            background: #48bb78;
+            color: white;
+        }
+
+        .platform-status.coming-soon {
+            background: #ed8936;
+            color: white;
+        }
+
+        .platform-status.planned {
+            background: #a0aec0;
+            color: white;
+        }
+
+        .platform-features {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .platform-features li {
+            padding: 3px 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .platform-features li::before {
+            content: "✓";
+            color: #48bb78;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .coming-soon-badge {
+            position: absolute;
+            top: -5px;
+            right: -25px;
+            background: #ed8936;
+            color: white;
+            padding: 5px 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transform: rotate(45deg);
+            text-transform: uppercase;
+        }
+
+        .platform-eta {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #718096;
+            font-style: italic;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-animation {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .stats-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .downloader-section, .features-section {
+                padding: 25px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            input {
+                padding: 12px 12px 12px 45px;
+            }
+            
+            .download-btn {
+                padding: 14px;
+            }
+            
+            .platform-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1><i class="fas fa-music"></i> Multi-Platform Audio Downloader</h1>
+            <p>Скачивайте аудио с популярных платформ в высоком качестве</p>
+        </div>
+
+        <div class="content-grid">
+            <!-- Секция загрузчика -->
+            <div class="downloader-section">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <i class="fab fa-youtube youtube-icon"></i>
+                    <h2 style="color: #4a5568; margin-bottom: 10px;">YouTube Audio Downloader</h2>
+                    <p style="color: #718096;">Сейчас доступно</p>
+                </div>
+
+                <form id="downloadForm">
+                    <div class="input-group">
+                        <i class="fas fa-link"></i>
+                        <input type="url" id="url" placeholder="Вставьте ссылку на YouTube видео" required>
+                    </div>
+
+                    <div class="input-group">
+                        <i class="fas fa-weight-hanging"></i>
+                        <input type="number" id="maxsize" placeholder="Максимальный размер файла (МБ)" value="15" min="1" max="50">
+                    </div>
+
+                    <button type="submit" class="download-btn" id="downloadBtn">
+                        <i class="fas fa-download"></i>
+                        Скачать аудио
+                    </button>
+                </form>
+
+                <div class="progress-section" id="progressSection">
+                    <div class="progress-text">
+                        <span>Прогресс загрузки</span>
+                        <span class="progress-percent" id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <div class="status" id="status">Ожидание...</div>
+                </div>
+
+                <div class="links-section" id="linksSection"></div>
+            </div>
+
+            <!-- Секция платформ и функций -->
+            <div class="features-section">
+                <h3 class="section-title">
+                    <i class="fas fa-star"></i>
+                    Поддерживаемые платформы
+                </h3>
+
+                <!-- YouTube - Активная платформа -->
+                <div class="platform-card active">
+                    <div class="platform-header">
+                        <i class="fab fa-youtube platform-icon" style="color: #ff0000;"></i>
+                        <div>
+                            <div class="platform-name">YouTube</div>
+                            <small style="color: #718096;">youtube.com, youtu.be</small>
+                        </div>
+                        <span class="platform-status active">Активно</span>
+                    </div>
+                    <ul class="platform-features">
+                        <li>MP3 загрузка до 320 кбит/с</li>
+                        <li>Загрузка обложек</li>
+                        <li>Отслеживание прогресса</li>
+                        <li>Ограничение размера файла</li>
+                    </ul>
+                </div>
+
+                <!-- VK - Скоро -->
+                <div class="platform-card coming-soon">
+                    <div class="coming-soon-badge">Soon</div>
+                    <div class="platform-header">
+                        <i class="fab fa-vk platform-icon" style="color: #4c75a3;"></i>
+                        <div>
+                            <div class="platform-name">VK Music</div>
+                            <small style="color: #718096;">vk.com/audios*</small>
+                        </div>
+                        <span class="platform-status coming-soon">Скоро</span>
+                    </div>
+                    <ul class="platform-features">
+                        <li>Загрузка треков из плейлистов</li>
+                        <li>Поддержка высокого качества</li>
+                        <li>Массовая загрузка</li>
+                        <li>Метаданные треков</li>
+                    </ul>
+                    <div class="platform-eta">Ожидается: Q2 2025</div>
+                </div>
+
+                <!-- SoundCloud - Скоро -->
+                <div class="platform-card coming-soon">
+                    <div class="coming-soon-badge">Soon</div>
+                    <div class="platform-header">
+                        <i class="fab fa-soundcloud platform-icon" style="color: #ff5500;"></i>
+                        <div>
+                            <div class="platform-name">SoundCloud</div>
+                            <small style="color: #718096;">soundcloud.com</small>
+                        </div>
+                        <span class="platform-status coming-soon">Скоро</span>
+                    </div>
+                    <ul class="platform-features">
+                        <li>Загрузка треков</li>
+                        <li>Поддержка плейлистов</li>
+                        <li>Оригинальное качество</li>
+                        <li>Информация об авторе</li>
+                    </ul>
+                    <div class="platform-eta">Ожидается: Q3 2025</div>
+                </div>
+
+                <!-- Spotify - Планируется -->
+                <div class="platform-card planned">
+                    <div class="platform-header">
+                        <i class="fab fa-spotify platform-icon" style="color: #1db954;"></i>
+                        <div>
+                            <div class="platform-name">Spotify</div>
+                            <small style="color: #718096;">spotify.com</small>
+                        </div>
+                        <span class="platform-status planned">Планируется</span>
+                    </div>
+                    <ul class="platform-features">
+                        <li>Превью треков (30 сек)</li>
+                        <li>Информация о треках</li>
+                        <li>Экспорт плейлистов</li>
+                        <li>*Ограничения лицензии</li>
+                    </ul>
+                    <div class="platform-eta">Планируется: Q4 2025</div>
+                </div>
+
+                <!-- Статистика -->
+                <div class="stats-section">
+                    <h4 style="margin-bottom: 15px; color: #4a5568;">
+                        <i class="fas fa-chart-bar"></i> Статистика
+                    </h4>
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="stat-item">
+                            <span>Активных подключений:</span>
+                            <span id="activeConnections">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Всего загрузок:</span>
+                            <span id="totalDownloads">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Общий размер:</span>
+                            <span id="totalSize">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Поддерживаемые платформы:</span>
+                            <span>1/4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Дополнительная информация -->
+                <div style="margin-top: 20px; padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 10px; font-size: 0.9rem; color: #4a5568;">
+                    <h4 style="margin-bottom: 10px;">
+                        <i class="fas fa-info-circle"></i> Информация
+                    </h4>
+                    <p style="margin-bottom: 8px;">• Максимальный размер файла: 50 МБ</p>
+                    <p style="margin-bottom: 8px;">• Качество аудио: до 320 кбит/с</p>
+                    <p style="margin-bottom: 8px;">• Поддерживаемые форматы: MP3</p>
+                    <p>• Файлы удаляются автоматически через 24 часа</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById("downloadForm");
+        const btn = document.getElementById("downloadBtn");
+        const progressSection = document.getElementById("progressSection");
+        const progressBar = document.getElementById("progressBar");
+        const progressPercent = document.getElementById("progressPercent");
+        const statusDiv = document.getElementById("status");
+        const linksSection = document.getElementById("linksSection");
+        const container = document.querySelector(".downloader-section");
+
+        let currentWebSocket = null;
+
+        // Загрузка статистики при запуске
+        loadStats();
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const url = document.getElementById("url").value.trim();
+            const maxsize = document.getElementById("maxsize").value || 15;
+
+            if (!url) {
+                showError("Пожалуйста, введите ссылку на YouTube!");
+                return;
+            }
+
+            if (!isValidYouTubeUrl(url)) {
+                showError("Пожалуйста, введите корректную ссылку на YouTube!");
+                return;
+            }
+
+            startDownload(url, maxsize);
+        });
+
+        function isValidYouTubeUrl(url) {
+            const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+            return youtubeRegex.test(url);
+        }
+
+        function startDownload(url, maxsize) {
+            if (currentWebSocket) {
+                currentWebSocket.close();
+            }
+
+            resetProgress();
+            progressSection.classList.add("active");
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner"></div>Подключение...';
+
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws/download?url=${encodeURIComponent(url)}&maxsize=${maxsize}`;
+            
+            currentWebSocket = new WebSocket(wsUrl);
+
+            currentWebSocket.onopen = function() {
+                updateStatus("Соединение установлено, начинаем загрузку...");
+                btn.innerHTML = '<div class="loading-spinner"></div>Загружается...';
+            };
+
+            currentWebSocket.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('Получено сообщение:', data);
+                    
+                    if (data.progress !== undefined && data.status) {
+                        updateProgress(data.progress, data.status);
+                    }
+                    
+                    if (data.message) {
+                        updateStatus("Готово!");
+                        showDownloadLinks(data);
+                        resetButton();
+                        loadStats(); // Обновляем статистику
+                    }
+                    
+                    if (data.error) {
+                        if (data.coming_soon) {
+                            showComingSoonError(data.error, data.platform);
+                        } else {
+                            showError(data.error);
+                        }
+                        resetButton();
+                    }
+                } catch (err) {
+                    console.error("Ошибка парсинга сообщения:", err, event.data);
+                    updateStatus(event.data);
+                }
+            };
+
+            currentWebSocket.onclose = function(event) {
+                console.log("WebSocket закрыт:", event.code, event.reason);
+                if (event.code !== 1000) {
+                    showError("Соединение разорвано");
+                }
+                resetButton();
+            };
+
+            currentWebSocket.onerror = function(error) {
+                console.error("Ошибка WebSocket:", error);
+                showError("Ошибка соединения с сервером");
+                resetButton();
+            };
+        }
+
+        function updateProgress(percent, status) {
+            const normalizedPercent = Math.min(Math.max(percent, 0), 100);
+            progressBar.style.width = normalizedPercent + "%";
+            progressPercent.textContent = Math.round(normalizedPercent) + "%";
+            updateStatus(status);
+        }
+
+        function updateStatus(message) {
+            statusDiv.textContent = message;
+            statusDiv.className = "status";
+        }
+
+        function showError(message) {
+            updateStatus(`Ошибка: ${message}`);
+            statusDiv.className = "status error";
+            container.classList.add("error-animation");
+            setTimeout(() => container.classList.remove("error-animation"), 500);
+            progressBar.style.background = "linear-gradient(90deg, #f56565, #e53e3e)";
+        }
+
+        function showComingSoonError(message, platform) {
+            updateStatus(`🚀 ${message}`);
+            statusDiv.className = "status";
+            statusDiv.style.background = "rgba(237, 137, 54, 0.1)";
+            statusDiv.style.color = "#dd6b20";
+            
+            // Анимация для соответствующей платформы
+            const platformCards = document.querySelectorAll('.platform-card.coming-soon');
+            platformCards.forEach(card => {
+                if (card.textContent.toLowerCase().includes(platform.toLowerCase())) {
+                    card.style.animation = "pulse 1s ease-in-out 3 times";
+                    setTimeout(() => {
+                        card.style.animation = "";
+                    }, 3000);
+                }
+            });
+        }
+
+        function showDownloadLinks(data) {
+            linksSection.innerHTML = '';
+            
+            if (data.download_url) {
+                const mp3Link = document.createElement("a");
+                mp3Link.href = data.download_url;
+                mp3Link.className = "download-link";
+                mp3Link.innerHTML = `<i class="fas fa-music"></i>Скачать MP3 ${data.file_size_mb ? `(${data.file_size_mb} МБ)` : ''}`;
+                mp3Link.download = "";
+                linksSection.appendChild(mp3Link);
+            }
+            
+            if (data.thumbnail_url) {
+                const thumbLink = document.createElement("a");
+                thumbLink.href = data.thumbnail_url;
+                thumbLink.className = "download-link thumbnail-link";
+                thumbLink.innerHTML = '<i class="fas fa-image"></i>Скачать обложку';
+                thumbLink.download = "";
+                linksSection.appendChild(thumbLink);
+            }
+            
+            linksSection.classList.add("active");
+        }
+
+        function resetProgress() {
+            progressBar.style.width = "0%";
+            progressBar.style.background = "linear-gradient(90deg, #667eea, #764ba2)";
+            progressPercent.textContent = "0%";
+            updateStatus("Ожидание...");
+            statusDiv.style.background = "rgba(102, 126, 234, 0.1)";
+            statusDiv.style.color = "#4a5568";
+            linksSection.classList.remove("active");
+            linksSection.innerHTML = '';
+        }
+
+        function resetButton() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-download"></i>Скачать аудио';
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('activeConnections').textContent = stats.active_connections;
+                    document.getElementById('totalDownloads').textContent = stats.total_downloads;
+                    document.getElementById('totalSize').textContent = `${stats.total_size_mb} МБ`;
+                }
+            } catch (error) {
+                console.log('Не удалось загрузить статистику:', error);
+            }
+        }
+
+        // Обновление статистики каждые 30 секунд
+        setInterval(loadStats, 30000);
+
+        // Автоматическое определение вставленной ссылки
+        document.getElementById("url").addEventListener("paste", function(e) {
+            setTimeout(() => {
+                if (this.value && isValidYouTubeUrl(this.value)) {
+                    this.style.borderColor = "#48bb78";
+                } else if (this.value) {
+                    // Проверяем, не это ли coming soon платформа
+                    const comingSoonPlatforms = ['vk.com', 'soundcloud.com', 'spotify.com'];
+                    const isComingSoon = comingSoonPlatforms.some(platform => 
+                        this.value.toLowerCase().includes(platform)
+                    );
+                    
+                    if (isComingSoon) {
+                        this.style.borderColor = "#ed8936";
+                    } else {
+                        this.style.borderColor = "#f56565";
+                    }
+                }
+            }, 100);
+        });
+
+        document.getElementById("url").addEventListener("input", function() {
+            this.style.borderColor = "#e2e8f0";
+        });
+    </script>
+</body>
+</html>

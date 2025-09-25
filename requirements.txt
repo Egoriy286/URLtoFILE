@@ -1,0 +1,9 @@
+yt-dlp
+mutagen
+requests
+asyncio
+fastapi
+uvicorn[standard]
+websockets
+asyncpg
+python-multipart
