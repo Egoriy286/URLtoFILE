@@ -2,11 +2,8 @@
 FROM python:3.11-slim AS base
 
 # Устанавливаем зависимости системы
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
-    git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends 
+RUN apt-get install ffmpeg libsm6 libxext6  -y
 
 # Создаем рабочую директорию
 WORKDIR /app
