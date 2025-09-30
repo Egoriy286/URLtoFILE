@@ -42,5 +42,5 @@ jobs:
               docker stop urltofile-container
               docker rm urltofile-container
             fi
-            docker run -d --name urltofile-container -p 8888:8888 urltofile
+            docker run -d --name urltofile-container -p 8080:8080 urltofile
           EOF
